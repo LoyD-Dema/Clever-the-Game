@@ -1,2 +1,2 @@
 # Clever the Game
-The repository of the Clever the Game, this is the videogame version of the famous That's Pretty Clever board game
+The goal of this project is to learn how to make a multiplayer game. To do that I will adapt the famous board game "That's Pretty Clever" in a videogame version
