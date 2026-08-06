@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using Unity.Services.Authentication;
-using Unity.Services.Core;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
@@ -13,6 +13,7 @@ public enum LeaveType
     HostLeft,
 }
 
+[RequireComponent(typeof(RelayManager))]
 public class LobbyManager : MonoBehaviour
 {
     // Singleton
@@ -28,7 +29,9 @@ public class LobbyManager : MonoBehaviour
     private string lobbyCode;
 
     private Lobby joinedLobby;
-    public Lobby JoinedLobby { get { return joinedLobby; } private set { } }
+    //public Lobby JoinedLobby { get { return joinedLobby; } private set { } }
+
+    private RelayManager relayManager;
 
     // Timers
     private float hearthbeatTimer;
@@ -39,6 +42,7 @@ public class LobbyManager : MonoBehaviour
     private const float HEARTBEAT_TIMER_MAX = 15.0f;
     private const float LOBBY_UPDATE_TIMER_MAX = 1.1f;
     public const string USERNAME_KEY = "Username";
+    public const string RELAY_JOIN_CODE = "RelayJoinCode";
 
     private void Awake()
     {
@@ -46,6 +50,8 @@ public class LobbyManager : MonoBehaviour
             I = this;
         else
             Destroy(I);
+
+        relayManager = GetComponent<RelayManager>();
     }
 
     private void Start()
@@ -89,17 +95,25 @@ public class LobbyManager : MonoBehaviour
             {
                 lobbyUpdateTimer = LOBBY_UPDATE_TIMER_MAX;
                 joinedLobby = await LobbyService.Instance.GetLobbyAsync(joinedLobby.Id);
+
+                Debug.Log(joinedLobby.Data[RELAY_JOIN_CODE].Value);
+                if (joinedLobby.Data[RELAY_JOIN_CODE].Value != "0" && AuthenticationService.Instance.PlayerId != joinedLobby.HostId)
+                {
+                    relayManager.JoinRelay(joinedLobby.Data[RELAY_JOIN_CODE].Value);
+                    SceneHandler.LoadScene(SceneType.PlayScene);
+                }
+
                 OnLobbyUpdate?.Invoke(joinedLobby);
             }
             catch (LobbyServiceException e)
             {
-                if (e.Reason == LobbyExceptionReason.LobbyNotFound)
+                if (AuthenticationService.Instance.PlayerId != joinedLobby.HostId && e.Reason == LobbyExceptionReason.LobbyNotFound)
                 {
-                    joinedLobby = null;
                     OnLeave?.Invoke(LeaveType.HostLeft);
+                    joinedLobby = null;
                 }
 
-                Debug.LogError(e);
+                Debug.LogError("Expetion Handled: " + e);
             }
         }
     }
@@ -129,7 +143,11 @@ public class LobbyManager : MonoBehaviour
             CreateLobbyOptions lobbyOptions = new CreateLobbyOptions
             {
                 IsPrivate = true,
-                Player = GetPlayer()
+                Player = GetPlayer(),
+                Data = new Dictionary<string, DataObject>()
+                {
+                    { RELAY_JOIN_CODE, new DataObject(DataObject.VisibilityOptions.Member, "0") }
+                }
             };
 
             joinedLobby = await LobbyService.Instance.CreateLobbyAsync(lobbyName, MAX_PLAYERS, lobbyOptions);
@@ -137,7 +155,7 @@ public class LobbyManager : MonoBehaviour
         }
         catch (LobbyServiceException e)
         {
-            Debug.LogError(e);
+            Debug.LogError("Expetion Handled: " + e);
         }
     }
 
@@ -155,9 +173,7 @@ public class LobbyManager : MonoBehaviour
         }
         catch (LobbyServiceException e)
         {
-            Debug.LogError(e);
-            // Display messages
-
+            Debug.LogError("Expetion Handled: " + e);
         }
     }
 
@@ -184,10 +200,36 @@ public class LobbyManager : MonoBehaviour
         }
         catch (LobbyServiceException e)
         {
-            Debug.LogError(e);
-            // Display messages
 
+            Debug.LogError("Expetion Handled: " + e);
         }
+    }
+
+    public async void StartGame()
+    {
+        Debug.Log("Game started");
+
+        // Qui verra' fatto partire il relay e in automatico verra cambiata scena (la scena principale del gioco)
+        string joinCode = await relayManager.CreateRelay(joinedLobby.Players.Count);
+
+        try
+        {
+            joinedLobby = await LobbyService.Instance.UpdateLobbyAsync(joinedLobby.Id, new UpdateLobbyOptions
+            {
+                Data = new Dictionary<string, DataObject>
+                {
+                    {
+                        RELAY_JOIN_CODE, new DataObject(DataObject.VisibilityOptions.Member, joinCode)
+                    }
+                }
+            });
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.LogError("Expetion Handled: " + e);
+        }
+        
+        SceneHandler.LoadScene(SceneType.PlayScene);
     }
 
     private Player GetPlayer()

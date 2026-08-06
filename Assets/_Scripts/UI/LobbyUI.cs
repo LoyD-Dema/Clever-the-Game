@@ -27,6 +27,7 @@ public class LobbyUI : MonoBehaviour
     [Header("Lobby")]
     [SerializeField] TextMeshProUGUI lobbyNameTMPro;
     [SerializeField] TextMeshProUGUI numOfPlayersTMPro;
+    [SerializeField] Button startButton;
     [SerializeField] Button leaveButton;
     [SerializeField] TMP_InputField lobbyCodeTMPro;
 
@@ -53,8 +54,12 @@ public class LobbyUI : MonoBehaviour
         nameInputField.onSubmit.AddListener(ResetNameInputField);
         nameInputField.onDeselect.AddListener(ResetNameInputField);
 
+        // Start Button
+        startButton.onClick.AddListener(LobbyManager.I.StartGame);
+
         // Leave button
         leaveButton.onClick.AddListener(LobbyManager.I.LeaveLobby);
+
 
 
         // LobbyManager
@@ -62,14 +67,41 @@ public class LobbyUI : MonoBehaviour
         LobbyManager.I.OnLobbyUpdate += LobbyManager_OnLobbyUpdate;
         LobbyManager.I.OnLeave += LobbyManager_OnLeave;
 
-    }    
+    }
 
 
 
     private void OnDisable()
     {
+        // Host button
         hostButton.onClick.RemoveAllListeners();
+
+        // Join button
         joinButton.onClick.RemoveAllListeners();
+
+        // Code InputField
+        codeInputField.onSubmit.RemoveAllListeners();
+        codeInputField.onDeselect.RemoveAllListeners();
+
+        // Edit Name button
+        editNameButton.onClick.RemoveAllListeners();
+
+        // Username InputField
+        nameInputField.onSubmit.RemoveAllListeners();
+        nameInputField.onDeselect.AddListener(ResetNameInputField);
+
+        // Start Button
+        startButton.onClick.RemoveAllListeners();
+
+        // Leave button
+        leaveButton.onClick.RemoveAllListeners();
+
+
+        // LobbyManager
+        LobbyManager.I.OnLobbyCreatedOrJoined -= LobbyManager_OnLobbyCreatedOrJoined;
+        LobbyManager.I.OnLobbyUpdate -= LobbyManager_OnLobbyUpdate;
+        LobbyManager.I.OnLeave -= LobbyManager_OnLeave;
+
     }
 
     private void Start()
@@ -124,6 +156,7 @@ public class LobbyUI : MonoBehaviour
         numOfPlayersTMPro.text = $"{lobby.Players.Count} / {lobby.MaxPlayers}";
 
         ClearLobby();
+
         foreach (Player player in lobby.Players)
         {
             Debug.Log(player.Data[LobbyManager.USERNAME_KEY].Value);
@@ -137,6 +170,12 @@ public class LobbyUI : MonoBehaviour
                 playerSingleTransform.GetComponent<Image>().color = color;
             }
 
+            if(AuthenticationService.Instance.PlayerId == lobby.HostId)
+            {
+                // Host only
+                startButton.gameObject.SetActive(true);
+            }
+
             playerSingleTransform.GetComponentInChildren<TextMeshProUGUI>().text = player.Data[LobbyManager.USERNAME_KEY].Value;
         }
 
@@ -145,6 +184,7 @@ public class LobbyUI : MonoBehaviour
     private void LobbyManager_OnLeave(LeaveType type)
     {
         SwitchParent();
+        ClearLobby();
         Debug.Log("Left cuz of " + type);
     }
 
@@ -155,5 +195,7 @@ public class LobbyUI : MonoBehaviour
             if (child == playersContainer) continue;
             Destroy(child.gameObject);
         }
+
+        startButton.gameObject.SetActive(false);
     }
 }
