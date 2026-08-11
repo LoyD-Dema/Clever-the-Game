@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -43,6 +44,6 @@ public class SceneHandler : MonoBehaviour
             return;
         }
 
-        SceneManager.LoadScene(Scenes[type]);
+        NetworkManager.Singleton.SceneManager.LoadScene(Scenes[type], LoadSceneMode.Single);
     }
 }

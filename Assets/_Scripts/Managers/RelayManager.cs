@@ -6,10 +6,38 @@ using Unity.Services.Relay;
 using Unity.Services.Relay.Models;
 using UnityEngine;
 
-public class RelayManager : MonoBehaviour
+public class RelayManager : NetworkBehaviour
 {
+    private int totalPlayers;
+
+    public override void OnNetworkSpawn()
+    {
+        if (!IsServer)
+            return;
+
+        NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_OnClientConnectedCallback;
+    }
+
+    public void OnDisable()
+    {
+        if (!IsServer)
+            return;
+
+        NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_OnClientConnectedCallback;
+    }
+
+    private void NetworkManager_OnClientConnectedCallback(ulong obj)
+    {
+        if (NetworkManager.Singleton.ConnectedClients.Count == totalPlayers)
+        {
+            SceneHandler.LoadScene(SceneType.PlayScene);
+        }
+    }
+
     public async Task<string> CreateRelay(int totPlayers)
     {
+        totalPlayers = totPlayers;
+
         string joinCode = null;
 
         try
@@ -20,6 +48,8 @@ public class RelayManager : MonoBehaviour
             RelayServerData relayServerData = AllocationUtils.ToRelayServerData(allocation, "dtls");
 
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
+
+            NetworkManager.Singleton.StartHost();
         }
         catch (RelayServiceException e)
         {
@@ -38,6 +68,8 @@ public class RelayManager : MonoBehaviour
             RelayServerData relayServerData = AllocationUtils.ToRelayServerData(joinAllocation, "dtls");
 
             NetworkManager.Singleton.GetComponent<UnityTransport>().SetRelayServerData(relayServerData);
+            
+            NetworkManager.Singleton.StartClient();
         }
         catch (RelayServiceException e)
         {

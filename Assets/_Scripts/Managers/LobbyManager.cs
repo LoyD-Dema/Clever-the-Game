@@ -100,7 +100,8 @@ public class LobbyManager : MonoBehaviour
                 if (joinedLobby.Data[RELAY_JOIN_CODE].Value != "0" && AuthenticationService.Instance.PlayerId != joinedLobby.HostId)
                 {
                     relayManager.JoinRelay(joinedLobby.Data[RELAY_JOIN_CODE].Value);
-                    SceneHandler.LoadScene(SceneType.PlayScene);
+                    joinedLobby = null;
+                    return;
                 }
 
                 OnLobbyUpdate?.Invoke(joinedLobby);
@@ -228,8 +229,6 @@ public class LobbyManager : MonoBehaviour
         {
             Debug.LogError("Expetion Handled: " + e);
         }
-        
-        SceneHandler.LoadScene(SceneType.PlayScene);
     }
 
     private Player GetPlayer()

@@ -1,27 +1,34 @@
+using System;
 using Unity.Netcode;
+using UnityEditor.PackageManager;
 using UnityEngine;
 
-public class SpawnManager : MonoBehaviour
+public class SpawnManager : NetworkBehaviour
 {
     [SerializeField] Transform[] spawnPoints;
     [SerializeField] NetworkObject networkObject;
+    int nextSpawnIndex;
 
-    private void Awake()
+    public override void OnNetworkSpawn()
     {
+        Debug.Log("SpawnManager spawned!");
+
+        if (!IsServer)
+            return;
+
+        SpawnPlayers();
     }
 
-    private void OnEnable()
+    private void SpawnPlayers()
     {
-        NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_OnClientConnectedCallback;
-    }
+        foreach(var client in NetworkManager.ConnectedClients)
+        {
+            // Nel caso id non dovesse essere lineare
+            int index = nextSpawnIndex % spawnPoints.Length;
+            nextSpawnIndex++;
 
-    private void OnDisable()
-    {
-        NetworkManager.Singleton.OnClientConnectedCallback -= NetworkManager_OnClientConnectedCallback;
-    }
-
-    private void NetworkManager_OnClientConnectedCallback(ulong obj)
-    {
-        NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(networkObject, position: spawnPoints[obj].position);
+            NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(networkObject, client.Key, isPlayerObject: true, position: spawnPoints[index].position,
+                                                                                                                       rotation: spawnPoints[index].rotation);
+        }
     }
 }
