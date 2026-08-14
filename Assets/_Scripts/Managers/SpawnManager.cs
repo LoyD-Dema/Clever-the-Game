@@ -11,24 +11,29 @@ public class SpawnManager : NetworkBehaviour
 
     public override void OnNetworkSpawn()
     {
-        Debug.Log("SpawnManager spawned!");
-
         if (!IsServer)
             return;
 
-        SpawnPlayers();
+        
+        Debug.LogWarning("SpawnManger setted for onyly test");
+        // Decommentare per il funzionamento non di test
+        //SpawnPlayers();
     }
+    
+    public void SpawnPlayer(ulong id)
+    {
+        // Nel caso id non dovesse essere lineare
+        int index = nextSpawnIndex % spawnPoints.Length;
+        nextSpawnIndex++;
 
+        NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(networkObject, id, isPlayerObject: true, position: spawnPoints[index].position,
+                                                                                                           rotation: spawnPoints[index].rotation);
+    }
     private void SpawnPlayers()
     {
         foreach(var client in NetworkManager.ConnectedClients)
         {
-            // Nel caso id non dovesse essere lineare
-            int index = nextSpawnIndex % spawnPoints.Length;
-            nextSpawnIndex++;
-
-            NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(networkObject, client.Key, isPlayerObject: true, position: spawnPoints[index].position,
-                                                                                                                       rotation: spawnPoints[index].rotation);
+            SpawnPlayer(client.Key);
         }
     }
 }

@@ -15,7 +15,7 @@ public class RelayManager : NetworkBehaviour
         if (!IsServer)
             return;
 
-        NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_OnClientConnectedCallback;
+        NetworkManager.Singleton.OnClientConnectedCallback += ChangeScene;
     }
 
     public void OnDisable()
@@ -23,10 +23,10 @@ public class RelayManager : NetworkBehaviour
         if (!IsServer)
             return;
 
-        NetworkManager.Singleton.OnClientConnectedCallback += NetworkManager_OnClientConnectedCallback;
+        NetworkManager.Singleton.OnClientConnectedCallback += ChangeScene;
     }
 
-    private void NetworkManager_OnClientConnectedCallback(ulong obj)
+    private void ChangeScene(ulong obj)
     {
         if (NetworkManager.Singleton.ConnectedClients.Count == totalPlayers)
         {
