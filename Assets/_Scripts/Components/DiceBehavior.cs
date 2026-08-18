@@ -10,6 +10,7 @@ public class DiceBehavior : NetworkBehaviour
 
 
     private bool isMoveAround;
+    private float speedMultiplayer = 2.0f;
 
     // moveAround parameters
     private float pitch;
@@ -36,6 +37,20 @@ public class DiceBehavior : NetworkBehaviour
         {
             Rotate();
         }
+    }
+
+    public void Hold()
+    {
+        pitch *= speedMultiplayer;
+        yaw *= speedMultiplayer;
+        roll *= speedMultiplayer;
+    }
+
+    public void UnHold()
+    {
+        pitch /= speedMultiplayer;
+        yaw /= speedMultiplayer;
+        roll /= speedMultiplayer;
     }
 
     public void Lunch(Vector3 direction)

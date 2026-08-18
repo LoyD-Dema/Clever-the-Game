@@ -6,8 +6,8 @@ public interface IInteractable
 {
     public GameObject GameObject { get; }
     public Vector3 StartPos { get; }
+    
     public void OnPositionReached();
-
     public void ResetPos();
 }
 
