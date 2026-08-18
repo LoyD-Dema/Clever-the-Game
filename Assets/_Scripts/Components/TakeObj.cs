@@ -6,7 +6,7 @@ public interface IInteractable
 {
     public GameObject GameObject { get; }
     public Vector3 StartPos { get; }
-    public void Relese();
+    public void OnPositionReached();
 
     public void ResetPos();
 }
@@ -16,75 +16,56 @@ public class TakeObj : MonoBehaviour
     [SerializeField] Transform reachTransform;
     Vector3 startPos;
     [SerializeField] float speed = 1.0f;
-    private float elapsedTimeToHold;
 
-    private bool isHolding;
-    private bool canGoBack;
-    private bool canRelese;
-    private IInteractable obj;
-
+    private bool isPressed;
+    private IInteractable hooveredObj;
+    private IInteractable activeObj;
+    
     private void Awake()
     {
-        CastRay.OnHoveredEnter += (RaycastHit hit) => { obj = hit.collider.GetComponent<IInteractable>(); startPos = obj.StartPos; };
-
-        //CastRay.OnHoveredExit += (RaycastHit hit) => obj = null;
+        CastRay.OnHoveredEnter += (RaycastHit hit) => { hooveredObj = hit.collider.GetComponent<IInteractable>(); startPos = hooveredObj.StartPos; };
     }
 
-    private void Start()
-    {
-        elapsedTimeToHold = speed;
-    }
 
-    private void Update()
+    private void OnIteract(InputValue value)
     {
-        if (isHolding && obj != null)
+        if (value.isPressed && !isPressed && hooveredObj != null)
         {
-            Take();
-        }
-        else if (canGoBack && obj != null)
-        {
-            obj.ResetPos();
-            canGoBack = false;
+            isPressed = true;
+            activeObj = hooveredObj;
+            InvokeRepeating(nameof(Take), 0, Time.deltaTime);
         }
     }
 
-    private void OnSelect(InputValue value)
+    private void OnExit(InputValue value)
     {
-        if (value.isPressed)
+        if (value.isPressed && hooveredObj == null)
         {
-            isHolding = true;
-            //CastRay.ChangeMask(0);
-        }
-        else
-        {
-            isHolding = false;
-            Relese();
+            InvokeRepeating(nameof(GoBack), 0, Time.deltaTime);
         }
     }
 
     private void Take()
     {
-        obj.GameObject.transform.position = Vector3.Lerp(obj.GameObject.transform.position, reachTransform.position, speed * Time.deltaTime);
+        // No Time.deltaTime required because this method is already called every DeltaTime
+        hooveredObj.GameObject.transform.position = Vector3.Lerp(activeObj.GameObject.transform.position, reachTransform.position, speed);
         
-        if ((obj.GameObject.transform.position - reachTransform.position).magnitude < 0.001f)
+        if ((hooveredObj.GameObject.transform.position - reachTransform.position).magnitude < 0.001f)
         {
-            canRelese = true;
+            isPressed = false;
+            hooveredObj.OnPositionReached();
+            CancelInvoke(nameof(Take));
         }
     }
 
-    
-
-    private void Relese()
+    private void GoBack()
     {
-        //CastRay.ResetMask();
+        // No Time.DeltaTime required because this method is already called every DeltaTime
+        hooveredObj.GameObject.transform.position = Vector3.Lerp(activeObj.GameObject.transform.position, startPos, speed * 2.5f);
 
-        if (canRelese)
+        if ((hooveredObj.GameObject.transform.position - startPos).magnitude < 0.001f)
         {
-            obj.Relese();
-            return;
+            CancelInvoke(nameof(GoBack));
         }
-
-        canGoBack = true;
-
     }
 }
