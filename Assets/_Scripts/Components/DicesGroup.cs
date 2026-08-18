@@ -36,11 +36,11 @@ public class DicesGroup : MonoBehaviour, IInteractable
         }
     }
 
-    public void Relese()
+    public void OnPositionReached()
     {
         foreach (DiceBehavior d in dices)
         {
-            d.Lunch(transform.forward);
+            d.MoveAround(transform.position);
         }
     }
 }

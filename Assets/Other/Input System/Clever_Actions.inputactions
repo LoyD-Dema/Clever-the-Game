@@ -16,12 +16,21 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Select",
+                    "name": "Interact",
                     "type": "Button",
                     "id": "5f9aa8c1-23f6-4497-930d-986b8dc5ef07",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "Press(behavior=2)",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ReleseBack",
+                    "type": "Button",
+                    "id": "c8642956-d3b6-4c93-80b6-6b97b831afe9",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
                     "initialStateCheck": false
                 }
             ],
@@ -55,7 +64,18 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Select",
+                    "action": "Interact",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "2bf72bc0-c848-47c6-949d-ef8a58248ca4",
+                    "path": "<Keyboard>/e",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ReleseBack",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

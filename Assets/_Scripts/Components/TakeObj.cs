@@ -20,52 +20,72 @@ public class TakeObj : MonoBehaviour
     private bool isPressed;
     private IInteractable hooveredObj;
     private IInteractable activeObj;
-    
+
+    bool isTake;
+    bool isGoBack;
+
     private void Awake()
     {
-        CastRay.OnHoveredEnter += (RaycastHit hit) => { hooveredObj = hit.collider.GetComponent<IInteractable>(); startPos = hooveredObj.StartPos; };
+        CastRay.OnHoveredEnter += (RaycastHit hit) =>
+        {
+            hooveredObj = hit.collider.GetComponent<IInteractable>(); 
+            startPos = hooveredObj.StartPos;
+        };
+
+        CastRay.OnHoveredExit += (RaycastHit hit) => hooveredObj = null;
+    }
+
+    private void Update()
+    {
+        if (isTake)
+            Take();
+        else if (isGoBack)
+            GoBack();
     }
 
 
-    private void OnIteract(InputValue value)
+    private void OnInteract(InputValue value)
     {
-        if (value.isPressed && !isPressed && hooveredObj != null)
+        if (value.isPressed && !isPressed && hooveredObj != null && activeObj == null)
         {
             isPressed = true;
             activeObj = hooveredObj;
-            InvokeRepeating(nameof(Take), 0, Time.deltaTime);
+            isTake = true;
         }
     }
 
-    private void OnExit(InputValue value)
+    private void OnReleseBack(InputValue value)
     {
-        if (value.isPressed && hooveredObj == null)
+        if (value.isPressed && activeObj != null)
         {
-            InvokeRepeating(nameof(GoBack), 0, Time.deltaTime);
+            isGoBack = true;
         }
     }
 
     private void Take()
     {
         // No Time.deltaTime required because this method is already called every DeltaTime
-        hooveredObj.GameObject.transform.position = Vector3.Lerp(activeObj.GameObject.transform.position, reachTransform.position, speed);
-        
-        if ((hooveredObj.GameObject.transform.position - reachTransform.position).magnitude < 0.001f)
+        activeObj.GameObject.transform.position = Vector3.Lerp(activeObj.GameObject.transform.position, reachTransform.position, 
+                                                                 speed * Time.deltaTime);
+
+        if ((activeObj.GameObject.transform.position - reachTransform.position).magnitude < 0.001f)
         {
             isPressed = false;
-            hooveredObj.OnPositionReached();
-            CancelInvoke(nameof(Take));
+            activeObj.OnPositionReached();
+            isTake = false;
         }
     }
 
     private void GoBack()
     {
         // No Time.DeltaTime required because this method is already called every DeltaTime
-        hooveredObj.GameObject.transform.position = Vector3.Lerp(activeObj.GameObject.transform.position, startPos, speed * 2.5f);
+        activeObj.GameObject.transform.position = Vector3.Lerp(activeObj.GameObject.transform.position, startPos, 
+                                                                 speed * 2.5f * Time.deltaTime);
 
-        if ((hooveredObj.GameObject.transform.position - startPos).magnitude < 0.001f)
+        if ((activeObj.GameObject.transform.position - startPos).magnitude < 0.001f)
         {
-            CancelInvoke(nameof(GoBack));
+            isGoBack = false;
+            activeObj = null;
         }
     }
 }

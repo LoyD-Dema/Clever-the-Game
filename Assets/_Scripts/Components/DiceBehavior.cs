@@ -2,15 +2,27 @@ using Unity.Netcode;
 using UnityEngine;
 
 
-[RequireComponent(typeof(Rigidbody))] 
+[RequireComponent(typeof(Rigidbody))]
 public class DiceBehavior : NetworkBehaviour
 {
     private Rigidbody rb;
     [SerializeField] float force = 2.5f;
 
+
+    private bool isMoveAround;
+
+    // moveAround parameters
+    private float pitch;
+    private float yaw;
+    private float roll;
+
+    Vector3 centerOfMove;
+
+
+
     private void Awake()
     {
-        rb = GetComponent<Rigidbody>(); 
+        rb = GetComponent<Rigidbody>();
     }
 
     private void Start()
@@ -18,10 +30,42 @@ public class DiceBehavior : NetworkBehaviour
         rb.isKinematic = true;
     }
 
+    private void FixedUpdate()
+    {
+        if(isMoveAround)
+        {
+            Rotate();
+        }
+    }
+
     public void Lunch(Vector3 direction)
     {
-        // In futuor isKinematic si trova gia' a false
+        CancelInvoke(nameof(Rotate));
         rb.isKinematic = false;
         rb.AddForce(direction * force, ForceMode.Impulse);
+    }
+
+    public void MoveAround(Vector3 center)
+    {
+        isMoveAround = true;
+
+        pitch = Random.Range(-50.0f, 50.0f);
+        yaw = Random.Range(-50.0f, 50.0f);
+        roll = Random.Range(-50.0f, 50.0f);
+
+        centerOfMove = center;
+
+    }
+
+    private void Rotate()
+    {
+        Vector3 rotation = new Vector3(pitch, yaw, roll) * Time.fixedDeltaTime;
+        Quaternion delta = Quaternion.Euler(rotation);
+        rb.MoveRotation(rb.rotation * delta);
+    }
+
+    private void Move()
+    {
+
     }
 }

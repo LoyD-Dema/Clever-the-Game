@@ -398,7 +398,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TakeObj
   reachTransform: {fileID: 492996437753005306}
-  timeToHold: 1
+  speed: 1
 --- !u!1 &2532222294226169880
 GameObject:
   m_ObjectHideFlags: 0
@@ -632,7 +632,6 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 492996437753005306}
-  - component: {fileID: 8345892576970270565}
   m_Layer: 0
   m_Name: HoldingObjectPoint
   m_TagString: Untagged
@@ -648,40 +647,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4426510403858591741}
   serializedVersion: 2
-  m_LocalRotation: {x: 0.0041414676, y: 0.92088485, z: -0.009786795, w: 0.38968986}
-  m_LocalPosition: {x: 0, y: 2.904, z: 1.621}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalRotation: {x: 0, y: 0.7071068, z: 0, w: 0.7071068}
+  m_LocalPosition: {x: 0, y: 3.2, z: 2.3}
+  m_LocalScale: {x: 5, y: 30.94261, z: 20.726698}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 5402109259762927790}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1773428102 &8345892576970270565
-ParentConstraint:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 4426510403858591741}
-  m_Enabled: 1
-  serializedVersion: 2
-  m_Weight: 1
-  m_TranslationAtRest: {x: 0, y: 2.904, z: 1.621}
-  m_RotationAtRest: {x: 1.2177868, y: 134.12689, z: 0}
-  m_TranslationOffsets:
-  - {x: 0.00999999, y: 0.76, z: 1.3280001}
-  m_RotationOffsets:
-  - {x: 1.2177868, y: 134.12689, z: 0}
-  m_AffectTranslationX: 1
-  m_AffectTranslationY: 1
-  m_AffectTranslationZ: 1
-  m_AffectRotationX: 1
-  m_AffectRotationY: 1
-  m_AffectRotationZ: 1
-  m_Active: 1
-  m_IsLocked: 1
-  m_Sources:
-  - sourceTransform: {fileID: 3273326381315343867}
-    weight: 1
+  m_LocalEulerAnglesHint: {x: 0, y: 90, z: 0}
 --- !u!1 &4781835901565020739
 GameObject:
   m_ObjectHideFlags: 0
