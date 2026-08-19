@@ -1,19 +1,19 @@
 using System.Collections;
 using UnityEngine;
 
-public class DicesGroup : MonoBehaviour, IInteractable
+public class DiceGroup : MonoBehaviour, IInteractable
 {
     public Vector3 StartPos { get; private set; }
 
     public GameObject GameObject => gameObject;
 
-    private DiceBehavior[] dices;
+    private DieBehavior[] dices;
 
     [SerializeField] private Transform[] dicesPos;
 
     private void Awake()
     {
-        dices = GetComponentsInChildren<DiceBehavior>();
+        dices = GetComponentsInChildren<DieBehavior>();
     }
 
     private void Start()
@@ -38,7 +38,7 @@ public class DicesGroup : MonoBehaviour, IInteractable
 
     public void OnPositionReached()
     {
-        foreach (DiceBehavior d in dices)
+        foreach (DieBehavior d in dices)
         {
             d.MoveAround(transform.position);
         }

@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: -4381801934880482339}
   - component: {fileID: 7709623571859787331}
   m_Layer: 0
-  m_Name: BlackDice
+  m_Name: BlackDie
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -68,7 +68,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 94763506
+  GlobalObjectIdHash: 2172695474
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1

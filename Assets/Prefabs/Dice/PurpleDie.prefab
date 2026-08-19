@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 1655974973841263663}
   - component: {fileID: 5148756376966572007}
   m_Layer: 0
-  m_Name: PurpleDice
+  m_Name: PurpleDie
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -68,7 +68,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 305766355
+  GlobalObjectIdHash: 1080579372
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1

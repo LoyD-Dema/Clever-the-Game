@@ -18,6 +18,11 @@ public class RotateHead : MonoBehaviour
     float yaw; // Horizontal
     float picth; // Vertical
 
+    private void Awake()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+    }
+
     private void OnMove(InputValue value)
     {
         // the value is already normalized

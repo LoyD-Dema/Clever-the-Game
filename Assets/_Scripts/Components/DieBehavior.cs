@@ -3,7 +3,7 @@ using UnityEngine;
 
 
 [RequireComponent(typeof(Rigidbody))]
-public class DiceBehavior : NetworkBehaviour
+public class DieBehavior : NetworkBehaviour
 {
     private Rigidbody rb;
     [SerializeField] float force = 2.5f;

@@ -6,6 +6,7 @@ public interface IInteractable
 {
     public GameObject GameObject { get; }
     public Vector3 StartPos { get; }
+    public bool IsActiveObj { get; set; }
     
     public void OnPositionReached();
     public void ResetPos();
@@ -17,7 +18,6 @@ public class TakeObj : MonoBehaviour
     Vector3 startPos;
     [SerializeField] float speed = 1.0f;
 
-    private bool isPressed;
     private IInteractable hooveredObj;
     private IInteractable activeObj;
 
@@ -46,9 +46,8 @@ public class TakeObj : MonoBehaviour
 
     private void OnInteract(InputValue value)
     {
-        if (value.isPressed && !isPressed && hooveredObj != null && activeObj == null)
+        if (value.isPressed && hooveredObj != null && activeObj == null)
         {
-            isPressed = true;
             activeObj = hooveredObj;
             isTake = true;
         }
@@ -70,7 +69,6 @@ public class TakeObj : MonoBehaviour
 
         if ((activeObj.GameObject.transform.position - reachTransform.position).magnitude < 0.001f)
         {
-            isPressed = false;
             activeObj.OnPositionReached();
             isTake = false;
         }
