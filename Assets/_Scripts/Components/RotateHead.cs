@@ -8,25 +8,45 @@ public class RotateHead : MonoBehaviour
     
 
     [Header("Params")]
-    [SerializeField] float rotationSpeed;
-    [SerializeField] float minHorizontalRotation;
-    [SerializeField] float maxHorizontalRotation;
-    [SerializeField] float minVerticalRotation;
-    [SerializeField] float maxVerticalRotation;
+    [SerializeField] private float defaultRotationSpeed;
+    [SerializeField] private float defaultMinHorizontalRotation;
+    [SerializeField] private float defaultMaxHorizontalRotation;
+    [SerializeField] private float defaultMinVerticalRotation;
+    [SerializeField] private float defaultMaxVerticalRotation;
+
+    private float rotationSpeed;
+    private float minHorizontalRotation;
+    private float maxHorizontalRotation;
+    private float minVerticalRotation;
+    private float maxVerticalRotation;
 
     private Vector2 inputDirectiont;
     float yaw; // Horizontal
     float picth; // Vertical
 
+    private PlayerInput playerInput;
+
     private void Awake()
     {
+        playerInput = GetComponent<PlayerInput>();
+
         Cursor.lockState = CursorLockMode.Locked;
+        Unlock();
     }
 
-    private void OnMove(InputValue value)
+    private void OnEnable()
+    {
+        playerInput.actions["Move"].started += OnMove;
+    }
+    private void OnDisable()
+    {
+        playerInput.actions["Move"].started -= OnMove;
+    }
+
+    private void OnMove(InputAction.CallbackContext context)
     {
         // the value is already normalized
-        inputDirectiont = value.Get<Vector2>();
+        inputDirectiont = context.ReadValue<Vector2>();
        
     }
 
@@ -42,5 +62,23 @@ public class RotateHead : MonoBehaviour
         
         // Set the final rotation
         neckTransform.localRotation = Quaternion.Euler(picth, yaw, 0);
+    }
+
+    public void PartialLock()
+    {
+        rotationSpeed = defaultRotationSpeed * 0.33f;
+        minHorizontalRotation = defaultMinHorizontalRotation * 0.33f;
+        maxHorizontalRotation = defaultMaxHorizontalRotation * 0.33f;
+        minVerticalRotation = defaultMinVerticalRotation * 0.33f;
+        maxVerticalRotation = defaultMaxVerticalRotation * 0.33f;
+    }
+
+    public void Unlock()
+    {
+        rotationSpeed = defaultRotationSpeed;
+        minHorizontalRotation = defaultMinHorizontalRotation;
+        maxHorizontalRotation = defaultMaxHorizontalRotation;
+        minVerticalRotation = defaultMinVerticalRotation;
+        maxVerticalRotation = defaultMaxVerticalRotation;
     }
 }

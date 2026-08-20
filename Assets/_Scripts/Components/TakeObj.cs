@@ -7,9 +7,12 @@ public interface IInteractable
     public GameObject GameObject { get; }
     public Vector3 StartPos { get; }
     public bool IsActiveObj { get; set; }
-    
-    public void OnPositionReached();
-    public void ResetPos();
+
+    public void PositionReached();
+    public void LeftMousePress();
+    public void LeftMouseHold();
+    public void LeftMouseRelese();
+
 }
 
 public class TakeObj : MonoBehaviour
@@ -21,18 +24,43 @@ public class TakeObj : MonoBehaviour
     private IInteractable hooveredObj;
     private IInteractable activeObj;
 
+    private PlayerInput playerInput;
+
     bool isTake;
     bool isGoBack;
 
+    private Action<RaycastHit> onHoveredEnter;
+    private Action<RaycastHit> onHoveredExit;
+
     private void Awake()
     {
-        CastRay.OnHoveredEnter += (RaycastHit hit) =>
-        {
-            hooveredObj = hit.collider.GetComponent<IInteractable>(); 
-            startPos = hooveredObj.StartPos;
-        };
+        playerInput = GetComponentInParent<PlayerInput>();
+    }
 
-        CastRay.OnHoveredExit += (RaycastHit hit) => hooveredObj = null;
+    private void OnEnable()
+    {
+        onHoveredEnter = (RaycastHit hit) => { hooveredObj = hit.collider.GetComponent<IInteractable>();
+                                               startPos = hooveredObj.StartPos; };
+        onHoveredExit = (RaycastHit hit) => hooveredObj = null;
+
+        CastRay.OnHoveredEnter += onHoveredEnter;
+        CastRay.OnHoveredExit += onHoveredExit;
+        
+        playerInput.actions["Interact"].started += OnInteract;
+        playerInput.actions["Interact"].performed += OnInteract;
+        playerInput.actions["Interact"].canceled += OnInteract;
+        playerInput.actions["Releseback"].started += OnReleseBack;
+    }
+
+    private void OnDisable()
+    {
+        CastRay.OnHoveredEnter -= onHoveredEnter;
+        CastRay.OnHoveredExit -= onHoveredExit;
+
+        playerInput.actions["Interact"].started -= OnInteract;
+        playerInput.actions["Interact"].performed -= OnInteract;
+        playerInput.actions["Interact"].canceled -= OnInteract;
+        playerInput.actions["Releseback"].started -= OnReleseBack;
     }
 
     private void Update()
@@ -44,18 +72,40 @@ public class TakeObj : MonoBehaviour
     }
 
 
-    private void OnInteract(InputValue value)
+    private void OnInteract(InputAction.CallbackContext context)
     {
-        if (value.isPressed && hooveredObj != null && activeObj == null)
+        if (context.started)
         {
-            activeObj = hooveredObj;
-            isTake = true;
+            if (activeObj != null)
+            {
+                activeObj.LeftMousePress();
+            }
+            else if (hooveredObj != null) // Here I am already sure the active object is null
+            {
+                activeObj = hooveredObj;
+                activeObj.IsActiveObj = true;
+                isTake = true;
+            }
+        }
+        else if(context.performed)
+        {
+            if (activeObj != null)
+            {
+                activeObj.LeftMouseHold();
+            }
+        }
+        else if(context.canceled)
+        {
+            if (activeObj != null)
+            {
+                activeObj.LeftMouseRelese();
+            }
         }
     }
 
-    private void OnReleseBack(InputValue value)
+    private void OnReleseBack(InputAction.CallbackContext context)
     {
-        if (value.isPressed && activeObj != null)
+        if (context.started && activeObj != null)
         {
             isGoBack = true;
         }
@@ -63,21 +113,19 @@ public class TakeObj : MonoBehaviour
 
     private void Take()
     {
-        // No Time.deltaTime required because this method is already called every DeltaTime
-        activeObj.GameObject.transform.position = Vector3.Lerp(activeObj.GameObject.transform.position, reachTransform.position, 
+        activeObj.GameObject.transform.position = Vector3.Lerp(activeObj.GameObject.transform.position, reachTransform.position,
                                                                  speed * Time.deltaTime);
 
         if ((activeObj.GameObject.transform.position - reachTransform.position).magnitude < 0.001f)
         {
-            activeObj.OnPositionReached();
+            activeObj.PositionReached();
             isTake = false;
         }
     }
 
     private void GoBack()
     {
-        // No Time.DeltaTime required because this method is already called every DeltaTime
-        activeObj.GameObject.transform.position = Vector3.Lerp(activeObj.GameObject.transform.position, startPos, 
+        activeObj.GameObject.transform.position = Vector3.Lerp(activeObj.GameObject.transform.position, startPos,
                                                                  speed * 2.5f * Time.deltaTime);
 
         if ((activeObj.GameObject.transform.position - startPos).magnitude < 0.001f)
