@@ -3,7 +3,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class DiceGroup : MonoBehaviour, IInteractable
+public class DiceGroup : NetworkBehaviour, IInteractable
 {
     public Vector3 StartPos { get; private set; }
     public GameObject GameObject => gameObject;
@@ -16,14 +16,15 @@ public class DiceGroup : MonoBehaviour, IInteractable
 
     private bool isWatched;
     private bool isHolded;
+    private bool hasReacheActivePos;
 
 
     private void Awake()
     {
         dices = GetComponentsInChildren<DieBehavior>();
-        CastRay.OnHoveredEnter += (RaycastHit hit) =>
+        CastRay.OnHoveredStay += (RaycastHit hit) =>
         {
-            if (hit.collider.gameObject == gameObject && IsActiveObj)
+            if (hit.collider.gameObject == gameObject && hasReacheActivePos && !isHolded)
             {
                 isWatched = true;
             }
@@ -46,13 +47,25 @@ public class DiceGroup : MonoBehaviour, IInteractable
 
     public void PositionReached()
     {
+        hasReacheActivePos = true;
+
         foreach (DieBehavior d in dices)
         {
-            d.MoveAround(transform.position);
+            d.MoveAroundServerRpc(transform.position);
         }
     }
 
     public void LeftMousePress()
+    {
+        //if (isWatched)
+        //{
+        //    isHolded = true;
+        //    TakeDice();
+        //    isWatched = false;
+        //}
+    }
+
+    public void LeftMouseHold()
     {
         if (isWatched)
         {
@@ -60,17 +73,21 @@ public class DiceGroup : MonoBehaviour, IInteractable
             TakeDice();
             isWatched = false;
         }
-    }
-
-    public void LeftMouseHold()
-    {
-        transform.position = Vector3.Lerp(transform.position, Camera.main.transform.forward * 5.0f, 5.0f * Time.deltaTime);
+        else if (isHolded)
+        {
+            transform.position = Vector3.Lerp(transform.position, Camera.main.transform.position + Camera.main.transform.forward * 0.5f, 5.0f * Time.deltaTime);
+        }
     }
 
     public void LeftMouseRelese()
     {
-        isHolded = false;
-        LunchDice();
+        if (isHolded)
+        {
+            isHolded = false;
+            hasReacheActivePos = false;
+            IsActiveObj = false;
+            LunchDice();
+        }
     }
 
     private void TakeDice()
@@ -83,10 +100,10 @@ public class DiceGroup : MonoBehaviour, IInteractable
 
     private void LunchDice()
     {
-        foreach(DieBehavior die in  dices)
+        foreach (DieBehavior die in dices)
         {
-            die.Lunch(Camera.main.transform.forward);
-            die.UnHold();
+            die.LunchServerRpc(Camera.main.transform.forward);
+            die.UnHoldServerRpc();
         }
     }
 
@@ -94,7 +111,7 @@ public class DiceGroup : MonoBehaviour, IInteractable
     {
         foreach (DieBehavior die in dices)
         {
-            die.Hold();
+            die.HoldServerRpc();
         }
     }
 }

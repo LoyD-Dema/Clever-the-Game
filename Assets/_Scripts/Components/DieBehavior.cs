@@ -19,7 +19,23 @@ public class DieBehavior : NetworkBehaviour
 
     Vector3 centerOfMove;
 
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void MoveAroundServerRpc(Vector3 center)
+    {
+        MoveAround(center);
+    }
 
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void LunchServerRpc(Vector3 direction)
+    {
+        Lunch(direction);
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void HoldServerRpc() => Hold();
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    public void UnHoldServerRpc() => UnHold();
 
     private void Awake()
     {
@@ -33,6 +49,9 @@ public class DieBehavior : NetworkBehaviour
 
     private void FixedUpdate()
     {
+        if (!IsServer)
+            return;
+
         if(isMoveAround)
         {
             Rotate();
@@ -55,7 +74,7 @@ public class DieBehavior : NetworkBehaviour
 
     public void Lunch(Vector3 direction)
     {
-        CancelInvoke(nameof(Rotate));
+        isMoveAround = false;
         rb.isKinematic = false;
         rb.AddForce(direction * force, ForceMode.Impulse);
     }

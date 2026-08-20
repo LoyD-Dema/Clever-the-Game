@@ -28,6 +28,7 @@ public class TakeObj : MonoBehaviour
 
     bool isTake;
     bool isGoBack;
+    bool isHolding;
 
     private Action<RaycastHit> onHoveredEnter;
     private Action<RaycastHit> onHoveredExit;
@@ -69,6 +70,14 @@ public class TakeObj : MonoBehaviour
             Take();
         else if (isGoBack)
             GoBack();
+
+        if(isHolding)
+        {
+            if (activeObj != null)
+            {
+                activeObj.LeftMouseHold();
+            }
+        }
     }
 
 
@@ -76,6 +85,8 @@ public class TakeObj : MonoBehaviour
     {
         if (context.started)
         {
+            isHolding = true;
+
             if (activeObj != null)
             {
                 activeObj.LeftMousePress();
@@ -87,15 +98,10 @@ public class TakeObj : MonoBehaviour
                 isTake = true;
             }
         }
-        else if(context.performed)
-        {
-            if (activeObj != null)
-            {
-                activeObj.LeftMouseHold();
-            }
-        }
         else if(context.canceled)
         {
+            isHolding = false;
+
             if (activeObj != null)
             {
                 activeObj.LeftMouseRelese();

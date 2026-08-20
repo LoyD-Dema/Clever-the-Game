@@ -30,6 +30,7 @@ public class RotateHead : MonoBehaviour
     {
         playerInput = GetComponent<PlayerInput>();
 
+        rotationSpeed = defaultRotationSpeed;
         Cursor.lockState = CursorLockMode.Locked;
         Unlock();
     }
@@ -37,10 +38,12 @@ public class RotateHead : MonoBehaviour
     private void OnEnable()
     {
         playerInput.actions["Move"].started += OnMove;
+        playerInput.actions["Move"].canceled += OnMove;
     }
     private void OnDisable()
     {
         playerInput.actions["Move"].started -= OnMove;
+        playerInput.actions["Move"].canceled -= OnMove;
     }
 
     private void OnMove(InputAction.CallbackContext context)
@@ -66,16 +69,14 @@ public class RotateHead : MonoBehaviour
 
     public void PartialLock()
     {
-        rotationSpeed = defaultRotationSpeed * 0.33f;
-        minHorizontalRotation = defaultMinHorizontalRotation * 0.33f;
-        maxHorizontalRotation = defaultMaxHorizontalRotation * 0.33f;
-        minVerticalRotation = defaultMinVerticalRotation * 0.33f;
-        maxVerticalRotation = defaultMaxVerticalRotation * 0.33f;
+        minHorizontalRotation = defaultMinHorizontalRotation * 0.15f;
+        maxHorizontalRotation = defaultMaxHorizontalRotation * 0.15f;
+        minVerticalRotation = defaultMinVerticalRotation * 0.15f;
+        maxVerticalRotation = defaultMaxVerticalRotation;
     }
 
     public void Unlock()
     {
-        rotationSpeed = defaultRotationSpeed;
         minHorizontalRotation = defaultMinHorizontalRotation;
         maxHorizontalRotation = defaultMaxHorizontalRotation;
         minVerticalRotation = defaultMinVerticalRotation;
