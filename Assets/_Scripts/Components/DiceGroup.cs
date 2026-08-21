@@ -9,9 +9,9 @@ public class DiceGroup : NetworkBehaviour, IInteractable
     public GameObject GameObject => gameObject;
     public bool IsActiveObj { get; set; }
 
-    private DieBehavior[] dices;
+    private DieBehavior[] dice;
 
-    [SerializeField] private Transform[] dicesPos;
+    [SerializeField] private Transform[] dicePositions;
     private InputAction selectAction;
 
     private bool isWatched;
@@ -21,7 +21,7 @@ public class DiceGroup : NetworkBehaviour, IInteractable
 
     private void Awake()
     {
-        dices = GetComponentsInChildren<DieBehavior>();
+        dice = GetComponentsInChildren<DieBehavior>();
         CastRay.OnHoveredStay += (RaycastHit hit) =>
         {
             if (hit.collider.gameObject == gameObject && hasReacheActivePos && !isHolded)
@@ -49,7 +49,7 @@ public class DiceGroup : NetworkBehaviour, IInteractable
     {
         hasReacheActivePos = true;
 
-        foreach (DieBehavior d in dices)
+        foreach (DieBehavior d in dice)
         {
             d.MoveAroundServerRpc(transform.position);
         }
@@ -90,6 +90,11 @@ public class DiceGroup : NetworkBehaviour, IInteractable
         }
     }
 
+    public void ReleseBackPressed()
+    {
+        ResetDice();
+    }
+
     private void TakeDice()
     {
         NetworkObject player = NetworkManager.Singleton.LocalClient.PlayerObject;
@@ -100,7 +105,7 @@ public class DiceGroup : NetworkBehaviour, IInteractable
 
     private void LunchDice()
     {
-        foreach (DieBehavior die in dices)
+        foreach (DieBehavior die in dice)
         {
             die.LunchServerRpc(Camera.main.transform.forward);
             die.UnHoldServerRpc();
@@ -109,9 +114,20 @@ public class DiceGroup : NetworkBehaviour, IInteractable
 
     private void HoldDice()
     {
-        foreach (DieBehavior die in dices)
+        foreach (DieBehavior die in dice)
         {
             die.HoldServerRpc();
+        }
+    }
+
+    [ContextMenu("ResetDice")]
+    private void ResetDice()
+    {
+        IsActiveObj = false;
+
+        for (int i = 0; i < dice.Length; i++)
+        {
+            dice[i].ResetDie(dicePositions[i]);
         }
     }
 }
