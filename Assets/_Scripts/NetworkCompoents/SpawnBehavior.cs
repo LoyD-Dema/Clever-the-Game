@@ -6,17 +6,26 @@ public class SpawnBehavior : NetworkBehaviour
 {
     PlayerInput input;
     RotateHead rotateHead;
-    [SerializeField] GameObject cameraObj;
+    new Camera camera;
+    AudioListener audioListener;
+    CastRay castRay;
 
 
     private void Awake()
     {
         input = GetComponent<PlayerInput>();
         rotateHead = GetComponent<RotateHead>();   
+        camera = GetComponentInChildren<Camera>();
+        audioListener = GetComponentInChildren<AudioListener>();
+        castRay = GetComponentInChildren<CastRay>();
+
+
 
         input.enabled = false;
         rotateHead.enabled = false;
-        cameraObj.SetActive(false);
+        camera.enabled = false;
+        audioListener.enabled = false;
+        castRay.enabled = false;
     }
 
     private void Start()
@@ -32,6 +41,8 @@ public class SpawnBehavior : NetworkBehaviour
 
         input.enabled = true;
         rotateHead.enabled = true;
-        cameraObj.SetActive(true);
+        camera.enabled = true;
+        audioListener.enabled = true;
+        castRay.enabled = true;
     }
 }

@@ -8,7 +8,6 @@ public class TEST_StartConnection : NetworkBehaviour
     private RelayManager relayManager;
     private ServicesManager servicesManager;
     private SpawnManager spawnManager;
-    private bool isHost;
 
     [SerializeField] private string joinCode;
 
@@ -36,13 +35,11 @@ public class TEST_StartConnection : NetworkBehaviour
     {
         string code = await relayManager.CreateRelay(4);
         Debug.Log("JOIN CODE: " + code);
-        isHost = true;
     }
 
     public void JoinRelay()
     {
         relayManager.JoinRelay(joinCode);
-        isHost = false;
     }
 
     public void Authenticate()

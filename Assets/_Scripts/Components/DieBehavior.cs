@@ -1,15 +1,18 @@
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Animations;
 
 
 [RequireComponent(typeof(Rigidbody))]
-public class DieBehavior : NetworkBehaviour
+public class DieBehavior : InteractObject
 {
+    private ParentConstraint parentConstraint;
     private Rigidbody rb;
     [SerializeField] float force = 2.5f;
 
 
-    private bool isMoveAround;
+
+    private bool canMoveAround;
     private float speedMultiplayer = 2.0f;
 
     // moveAround parameters
@@ -19,30 +22,14 @@ public class DieBehavior : NetworkBehaviour
 
     Vector3 centerOfMove;
 
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void MoveAroundServerRpc(Vector3 center)
-    {
-        MoveAround(center);
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void LunchServerRpc(Vector3 direction)
-    {
-        Lunch(direction);
-    }
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void HoldServerRpc() => Hold();
-
-    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
-    public void UnHoldServerRpc() => UnHold();
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
+        parentConstraint = GetComponent<ParentConstraint>();    
     }
 
-    private void Start()
+    public override void OnNetworkSpawn()
     {
         rb.isKinematic = true;
     }
@@ -52,20 +39,20 @@ public class DieBehavior : NetworkBehaviour
         if (!IsServer)
             return;
 
-        if(isMoveAround)
+        if(canMoveAround)
         {
             Rotate();
         }
     }
 
-    public void Hold()
+    public void IncreseRotationSpeed()
     {
         pitch *= speedMultiplayer;
         yaw *= speedMultiplayer;
         roll *= speedMultiplayer;
     }
 
-    public void UnHold()
+    public void DecreseRotationSpeed()
     {
         pitch /= speedMultiplayer;
         yaw /= speedMultiplayer;
@@ -74,21 +61,20 @@ public class DieBehavior : NetworkBehaviour
 
     public void Lunch(Vector3 direction)
     {
-        isMoveAround = false;
+        canMoveAround = false;
         rb.isKinematic = false;
         rb.AddForce(direction * force, ForceMode.Impulse);
     }
 
     public void MoveAround(Vector3 center)
     {
-        isMoveAround = true;
+        canMoveAround = true;
 
         pitch = Random.Range(-50.0f, 50.0f);
         yaw = Random.Range(-50.0f, 50.0f);
         roll = Random.Range(-50.0f, 50.0f);
 
         centerOfMove = center;
-
     }
 
     private void Rotate()
@@ -98,8 +84,20 @@ public class DieBehavior : NetworkBehaviour
         rb.MoveRotation(rb.rotation * delta);
     }
 
-    private void Move()
-    {
 
+    public void ResetDie()
+    {
+        SetPoint(StartPos, 2.0f);
+        transform.localRotation = Quaternion.identity;
+        rb.isKinematic = true;
+    }
+
+    public void Detach()
+    {
+        parentConstraint.constraintActive = false;
+    }
+    public void Attach()
+    {
+        parentConstraint.constraintActive = true;
     }
 }

@@ -1,134 +1,160 @@
-using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 
-public class DiceGroup : NetworkBehaviour, IInteractable
+public class DiceGroup : InteractObject
 {
-    public Vector3 StartPos { get; private set; }
-    public GameObject GameObject => gameObject;
-    public bool IsActiveObj { get; set; }
+    private List<DieBehavior> activeDice;
+    [SerializeField] private List<DieBehavior> dice;
 
-    private DieBehavior[] dice;
+    private bool isHolding;
 
-    [SerializeField] private Transform[] dicePositions;
-    private InputAction selectAction;
-
-    private bool isWatched;
-    private bool isHolded;
-    private bool hasReacheActivePos;
-
+    private Vector3 newPointToReach => clientPlayerCam.transform.position + clientPlayerCam.transform.forward * 1.2f;
+    private Camera clientPlayerCam;
+    private bool canOverride;
 
     private void Awake()
     {
-        dice = GetComponentsInChildren<DieBehavior>();
-        CastRay.OnHoveredStay += (RaycastHit hit) =>
-        {
-            if (hit.collider.gameObject == gameObject && hasReacheActivePos && !isHolded)
-            {
-                isWatched = true;
-            }
-        };
-
-        CastRay.OnHoveredExit += (RaycastHit hit) =>
-        {
-            if (isHolded)
-                return;
-
-            isWatched = false;
-        };
-    }
-
-    private void Start()
-    {
-        StartPos = transform.position;
+        activeDice = dice;
     }
 
 
-    public void PositionReached()
+    protected override void Update()
     {
-        hasReacheActivePos = true;
+        if (!IsServer)
+            return;
 
-        foreach (DieBehavior d in dice)
+        if (canOverride)
         {
-            d.MoveAroundServerRpc(transform.position);
+            Debug.Log(clientPlayerCam.transform.rotation);
+            OverridePositionToReach(newPointToReach);
+        }
+
+        base.Update();
+    }
+
+    public override void Select()
+    {
+        base.Select();
+
+        if(NetworkManager.LocalClient.PlayerObject.TryGetComponent<RotateHead>(out RotateHead rotateHead))
+        {
+            rotateHead.PartialLock();
+        }
+
+        SetOverideServerRpc(true, NetworkManager.LocalClient.PlayerObject);
+        HoldDiceServerRpc();
+    }
+
+    public override void Back()
+    {
+        base.Back();
+
+        SetOverideServerRpc(false, NetworkManager.LocalClient.PlayerObject);
+        ResetGroupServerRpc();
+    }
+
+    public override void UnSelect()
+    {
+        base.UnSelect();
+
+        if (NetworkManager.LocalClient.PlayerObject.TryGetComponent<RotateHead>(out RotateHead rotateHead))
+        {
+            rotateHead.Unlock();
+        }
+        UnselectServerRpc();
+    }
+
+    public void RemoveDice(DieBehavior die)
+    {
+        die.Detach();
+        activeDice.Remove(die);
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void UnselectServerRpc()
+    {
+        if ((transform.position - newPointToReach).magnitude < 0.5f)
+        {
+            LunchDice(clientPlayerCam.transform.forward);
+        }
+        else
+        {
+            SetOverideServerRpc(false, NetworkManager.LocalClient.PlayerObject);
+            SetPoint(StartPos, speed);
         }
     }
 
-    public void LeftMousePress()
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void SetOverideServerRpc(bool enable, NetworkObjectReference clientPlayer)
     {
-        //if (isWatched)
-        //{
-        //    isHolded = true;
-        //    TakeDice();
-        //    isWatched = false;
-        //}
-    }
+        canOverride = enable;
 
-    public void LeftMouseHold()
-    {
-        if (isWatched)
+        if (clientPlayer.TryGet(out NetworkObject obj))
         {
-            isHolded = true;
-            TakeDice();
-            isWatched = false;
-        }
-        else if (isHolded)
-        {
-            transform.position = Vector3.Lerp(transform.position, Camera.main.transform.position + Camera.main.transform.forward * 0.5f, 5.0f * Time.deltaTime);
+            clientPlayerCam = obj.GetComponentInChildren<Camera>(true);
         }
     }
 
-    public void LeftMouseRelese()
+   
+
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void HoldDiceServerRpc()
     {
-        if (isHolded)
+        foreach (DieBehavior die in activeDice)
         {
-            isHolded = false;
-            hasReacheActivePos = false;
-            IsActiveObj = false;
-            LunchDice();
+            die.MoveAround(transform.position);
+            die.IncreseRotationSpeed();
         }
     }
 
-    public void ReleseBackPressed()
+    private void LunchDice(Vector3 direction)
     {
-        ResetDice();
-    }
-
-    private void TakeDice()
-    {
-        NetworkObject player = NetworkManager.Singleton.LocalClient.PlayerObject;
-        player.GetComponent<RotateHead>().PartialLock();
-
-        HoldDice();
-    }
-
-    private void LunchDice()
-    {
-        foreach (DieBehavior die in dice)
+        foreach (DieBehavior die in activeDice)
         {
-            die.LunchServerRpc(Camera.main.transform.forward);
-            die.UnHoldServerRpc();
+            die.Detach();
+            die.DecreseRotationSpeed();
+            die.Lunch(direction);
+
+            // TODO - Comunicare al takeObject che nessun oggetto attivo e' impostato
         }
     }
 
-    private void HoldDice()
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void SelectDiceServerRpc()
     {
-        foreach (DieBehavior die in dice)
+        foreach (DieBehavior die in activeDice)
         {
-            die.HoldServerRpc();
+            die.MoveAround(transform.position);
         }
     }
 
-    [ContextMenu("ResetDice")]
-    private void ResetDice()
-    {
-        IsActiveObj = false;
 
-        for (int i = 0; i < dice.Length; i++)
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)]
+    private void ResetDiceServerRpc()
+    {
+        foreach (DieBehavior die in activeDice)
         {
-            dice[i].ResetDie(dicePositions[i]);
+            die.ResetDie();
         }
+    }
+
+    private void AttachDice()
+    {
+        foreach (DieBehavior die in activeDice)
+        {
+            die.Attach();
+        }
+    }
+
+    [Rpc(SendTo.Server, InvokePermission = RpcInvokePermission.Everyone)] //  TODO - Change in only server
+    public void ResetGroupServerRpc()
+    {
+        activeDice = dice.ToList();
+        ResetDiceServerRpc();
+        AttachDice();
     }
 }
 

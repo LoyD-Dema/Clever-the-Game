@@ -1,34 +1,32 @@
-﻿using System.Collections;
-using Unity.Netcode;
-using Unity.VisualScripting;
+﻿using Unity.Netcode;
 using UnityEngine;
 
 public class InteractObject : NetworkBehaviour
 {
     private Vector3 positionToReach;
-    private float speed;
-    private bool canMove;
+    protected float speed {  get; private set; }    
+    protected bool canMove { get; private set; }
 
-    public bool IsInFocus { get; protected set; }
     public Vector3 StartPos { get; protected set; }
 
     public override void OnNetworkSpawn()
     {
-        StartPos = transform.position;
+        StartPos = transform.localPosition;
     }
 
     protected virtual void Update()
     {
-        if(IsOwner && canMove)
+        if (IsOwner && canMove)
         {
             GoTo();
         }
-        
+
     }
-    
+
+
     public void SetPoint(Vector3 positionToReach, float speed)
     {
-        if(!IsOwner)
+        if (!IsOwner)
         {
             SetPointServerRpc(positionToReach, speed);
             return;
@@ -52,19 +50,29 @@ public class InteractObject : NetworkBehaviour
     {
         transform.position = Vector3.Lerp(transform.position, positionToReach, speed * Time.deltaTime);
 
-        if((transform.position - positionToReach).sqrMagnitude < 0.001f)
+        if ((transform.position - positionToReach).sqrMagnitude < 0.0001f)
         {
             transform.position = positionToReach;
-           //canMove = false;
+            canMove = false;
         }
     }
 
-    public void Focus()
+    protected virtual void OverridePositionToReach(Vector3 newPositionToReach)
     {
-        IsInFocus = true;
+        positionToReach = newPositionToReach;
     }
-    public void UnFocus()
+
+    public virtual void Select()
     {
-        IsInFocus = false;
+
     }
+    public virtual void UnSelect()
+    {
+
+    }
+    public virtual void Back()
+    {
+       
+    }
+
 }

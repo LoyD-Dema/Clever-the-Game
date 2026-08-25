@@ -141,11 +141,10 @@ Transform:
   m_GameObject: {fileID: 1864424852263744567}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.033, z: 0.35299993}
+  m_LocalPosition: {x: 0, y: 3.4819999, z: 0.35299993}
   m_LocalScale: {x: 2, y: 1.5, z: 0.5}
   m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 349621108100007954}
+  m_Children: []
   m_Father: {fileID: 5402109259762927790}
   m_LocalEulerAnglesHint: {x: -0.268, y: 0, z: 0}
 --- !u!33 &6021517947803667042
@@ -293,6 +292,7 @@ Transform:
   - {fileID: 7137892251215121063}
   - {fileID: 3273326381315343867}
   - {fileID: 2857428924580537160}
+  - {fileID: 349621108100007954}
   - {fileID: 6667012550557217680}
   - {fileID: 492996437753005306}
   m_Father: {fileID: 0}
@@ -340,11 +340,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RotateHead
   neckTransform: {fileID: 3273326381315343867}
-  defaultRotationSpeed: 65
+  defaultRotationSpeed: 80
   defaultMinHorizontalRotation: -90
   defaultMaxHorizontalRotation: 90
-  defaultMinVerticalRotation: -85
-  defaultMaxVerticalRotation: 85
+  defaultMinVerticalRotation: -60
+  defaultMaxVerticalRotation: 60
 --- !u!114 &3338430842044225949
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -357,7 +357,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 1834717752
+  GlobalObjectIdHash: 2649767052
   InScenePlacedSourceGlobalObjectIdHash: 0
   DeferredDespawnTick: 0
   Ownership: 1
@@ -384,7 +384,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnBehavior
   ShowTopMostFoldoutHeaderGroup: 1
-  cameraObj: {fileID: 4781835901565020739}
 --- !u!114 &4629890534384532225
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -668,6 +667,7 @@ GameObject:
   - component: {fileID: 7530238844195166798}
   - component: {fileID: 4463920994345152245}
   - component: {fileID: 732964242248016352}
+  - component: {fileID: 3385779726734303506}
   m_Layer: 0
   m_Name: Camera
   m_TagString: MainCamera
@@ -683,12 +683,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4781835901565020739}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.50127167, y: 0.6666692, z: 1.9798864}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 3.402, z: 0.35299993}
+  m_LocalScale: {x: 1.0025433, y: 1, z: 0.9899432}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2857428924580537160}
+  m_Father: {fileID: 5402109259762927790}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!20 &272781270278902550
 Camera:
@@ -721,7 +721,7 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.3
+  near clip plane: 0.7
   far clip plane: 1000
   field of view: 60
   orthographic: 0
@@ -810,6 +810,33 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 64
   _debugSphereDimension: 0.05
+--- !u!1773428102 &3385779726734303506
+ParentConstraint:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4781835901565020739}
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Weight: 1
+  m_TranslationAtRest: {x: 0, y: 3.033, z: 0.35299993}
+  m_RotationAtRest: {x: 0, y: 0, z: 0}
+  m_TranslationOffsets:
+  - {x: 0.01, y: 1.247, z: 0.019999921}
+  m_RotationOffsets:
+  - {x: 0, y: 0, z: 0}
+  m_AffectTranslationX: 0
+  m_AffectTranslationY: 0
+  m_AffectTranslationZ: 0
+  m_AffectRotationX: 1
+  m_AffectRotationY: 1
+  m_AffectRotationZ: 1
+  m_Active: 1
+  m_IsLocked: 1
+  m_Sources:
+  - sourceTransform: {fileID: 3273326381315343867}
+    weight: 1
 --- !u!1 &5176054369554816699
 GameObject:
   m_ObjectHideFlags: 0
@@ -1063,7 +1090,7 @@ Transform:
   m_GameObject: {fileID: 7921335553739395389}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.01, y: 1.786, z: 0.333}
+  m_LocalPosition: {x: -0.01, y: 2.235, z: 0.333}
   m_LocalScale: {x: 0.3, y: 1, z: 0.3}
   m_ConstrainProportionsScale: 0
   m_Children: []

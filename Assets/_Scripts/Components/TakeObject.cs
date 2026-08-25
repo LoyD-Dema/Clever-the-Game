@@ -3,20 +3,6 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public interface IInteractable
-{
-    public GameObject GameObject { get; }
-    public Vector3 StartPos { get; }
-    public bool IsActiveObj { get; set; }
-
-    public void PositionReached();
-    public void LeftMousePress();
-    public void LeftMouseHold();
-    public void LeftMouseRelese();
-    public void ReleseBackPressed();
-
-}
-
 public class TakeObject : NetworkBehaviour
 {
     [SerializeField] Transform pointToReach;
@@ -28,8 +14,6 @@ public class TakeObject : NetworkBehaviour
 
     private PlayerInput playerInput;
 
-    bool isTaken;
-    bool isGoBack;
     bool isHolding;
 
     private Action<RaycastHit> onHoveredStay;
@@ -39,7 +23,7 @@ public class TakeObject : NetworkBehaviour
     {
         playerInput = GetComponentInParent<PlayerInput>();
         onHoveredStay = (RaycastHit hit) => { hooveredGameObject = hit.collider.gameObject; };
-        onHoveredExit = (RaycastHit hit) => { hooveredGameObject = null; }; 
+        onHoveredExit = (RaycastHit hit) => { hooveredGameObject = null; };
     }
 
     private void Start()
@@ -58,7 +42,6 @@ public class TakeObject : NetworkBehaviour
 
         // Inputs
         playerInput.actions["Interact"].started += OnInteract;
-        playerInput.actions["Interact"].performed += OnInteract;
         playerInput.actions["Interact"].canceled += OnInteract;
         playerInput.actions["ReleseBack"].started += OnReleseBack;
     }
@@ -74,54 +57,47 @@ public class TakeObject : NetworkBehaviour
 
         // Inputs
         playerInput.actions["Interact"].started -= OnInteract;
-        playerInput.actions["Interact"].performed -= OnInteract;
         playerInput.actions["Interact"].canceled -= OnInteract;
         playerInput.actions["ReleseBack"].started -= OnReleseBack;
     }
 
-    private void Update()
-    {
-        //if (isHolding)
-        //{
-        //    if (activeObj != null)
-        //    {
-        //        activeObj.LeftMouseHold();
-        //    }
-        //}
-    }
 
     private void OnInteract(InputAction.CallbackContext context)
     {
+        if (hooveredGameObject == null)
+            return;
+
         if (context.started)
         {
-            if (hooveredGameObject != null && activeObj == null) // Here I am already sure the active object is null
+            if (activeObj != null)
+                return;
+
+            // Take an object from the table
+            if (hooveredGameObject.TryGetComponent<InteractObject>(out InteractObject interactObject))
             {
-                if(hooveredGameObject.TryGetComponent<InteractObject>(out InteractObject interactObject))
-                { 
-                    activeObj = interactObject;
-                    activeObj.Focus();
-                    activeObj.SetPoint(pointToReach.position, takeSpeed);
-                }
+                activeObj = interactObject;
+                activeObj.SetPoint(pointToReach.position, takeSpeed);
+                activeObj.Select();
+            }
+            else
+            {
+                Debug.LogError("The gameobject has the tag Interact, but not the InteractObject script", hooveredGameObject);
             }
         }
-        else if (context.canceled)
+        else if (context.canceled && activeObj != null && activeObj.gameObject == hooveredGameObject)
         {
-            isHolding = false;
-
-            if (activeObj != null)
-            {
-                //activeObj.LeftMouseRelese();
-            }
+            activeObj.UnSelect();
         }
     }
 
     private void OnReleseBack(InputAction.CallbackContext context)
     {
-        Debug.Log("E Pressed");
+        if (activeObj == null || hooveredGameObject == null)
+            return;
 
-        if (context.started && activeObj != null && hooveredGameObject == activeObj.gameObject)
+        if (context.started && hooveredGameObject == activeObj.gameObject)
         {
-            activeObj.UnFocus();
+            activeObj.Back();
             activeObj.SetPoint(activeObj.StartPos, releseSpeed);
             activeObj = null;
         }
