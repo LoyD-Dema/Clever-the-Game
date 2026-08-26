@@ -72,7 +72,7 @@ public class RotateHead : MonoBehaviour
         minHorizontalRotation = defaultMinHorizontalRotation * 0.15f;
         maxHorizontalRotation = defaultMaxHorizontalRotation * 0.15f;
         minVerticalRotation = defaultMinVerticalRotation * 0.15f;
-        maxVerticalRotation = defaultMaxVerticalRotation;
+        maxVerticalRotation = defaultMaxVerticalRotation * 0.15f;
     }
 
     public void Unlock()

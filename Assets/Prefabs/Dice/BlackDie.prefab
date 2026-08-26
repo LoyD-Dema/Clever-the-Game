@@ -148,7 +148,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DiceBehavior
   ShowTopMostFoldoutHeaderGroup: 1
-  force: 2.5
+  force: 1
 --- !u!114 &2607030309567476854
 MonoBehaviour:
   m_ObjectHideFlags: 0

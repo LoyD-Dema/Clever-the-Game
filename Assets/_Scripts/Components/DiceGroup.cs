@@ -14,6 +14,8 @@ public class DiceGroup : InteractObject
     private Camera clientPlayerCam;
     private bool canOverride;
 
+    [SerializeField] private GravityPoint gravityPoint;
+
     private void Awake()
     {
         activeDice = dice;
@@ -77,6 +79,7 @@ public class DiceGroup : InteractObject
     {
         if ((transform.position - newPointToReach).magnitude < 0.5f)
         {
+            gravityPoint.Active();
             LunchDice(clientPlayerCam.transform.forward);
         }
         else
